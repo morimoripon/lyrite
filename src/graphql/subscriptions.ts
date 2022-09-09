@@ -3,8 +3,8 @@
 // this is an auto generated file. This will be overwritten
 
 export const onCreateSong = /* GraphQL */ `
-  subscription OnCreateSong($filter: ModelSubscriptionSongFilterInput) {
-    onCreateSong(filter: $filter) {
+  subscription OnCreateSong {
+    onCreateSong {
       id
       title
       lyrics
@@ -14,8 +14,8 @@ export const onCreateSong = /* GraphQL */ `
   }
 `;
 export const onUpdateSong = /* GraphQL */ `
-  subscription OnUpdateSong($filter: ModelSubscriptionSongFilterInput) {
-    onUpdateSong(filter: $filter) {
+  subscription OnUpdateSong {
+    onUpdateSong {
       id
       title
       lyrics
@@ -25,8 +25,8 @@ export const onUpdateSong = /* GraphQL */ `
   }
 `;
 export const onDeleteSong = /* GraphQL */ `
-  subscription OnDeleteSong($filter: ModelSubscriptionSongFilterInput) {
-    onDeleteSong(filter: $filter) {
+  subscription OnDeleteSong {
+    onDeleteSong {
       id
       title
       lyrics

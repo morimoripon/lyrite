@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 
 export const Contents = css`
-  padding-top: 3rem;
+  padding: 3rem 1rem 0;
   display: flex;
   flex-direction: column;
   align-items: center;

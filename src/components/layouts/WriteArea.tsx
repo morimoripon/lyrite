@@ -1,18 +1,20 @@
+import { Button } from '@mui/material';
 import { Box } from '@mui/system'
 import React, { useState } from 'react'
 import { WriteAreaBox, WriteInputBox } from '../../styles/components/Box'
+import { AddButton } from '../../styles/components/Button';
 import WriteInput from '../elements/WriteInput';
 
 type Props = {
   lyrics: string[],
-  setLyrics: Function
+  setLyrics: Function,
+  addSentence: Function
 }
 
-const WriteArea = ({ lyrics, setLyrics }: Props) => {
+const WriteArea = ({ lyrics, setLyrics, addSentence }: Props) => {
   /* const [ lyrics, setLyrics ] = useState<string[]>(['', '', '', '', '', '']); */
 
   const changeLyrics = (index: number, lyric: string) => {
-    console.log(lyric)
     setLyrics([
       ...lyrics.slice(0, index),
       lyric,
@@ -23,6 +25,7 @@ const WriteArea = ({ lyrics, setLyrics }: Props) => {
   return (
     <Box css={WriteInputBox}>
       {lyrics.map((lyric, index) => <WriteInput key={index} lyric={lyric} changeLyrics={(value) => changeLyrics(index, value)} />)}
+      <Button css={AddButton} color='secondary' variant='outlined' onClick={() => addSentence()}>+</Button>
     </Box>
   );
 }

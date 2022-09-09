@@ -15,8 +15,6 @@ type Props = {
 
 const Header = ({ user, signOut, save, open }: Props) => {
 
-  console.log('user', user);
-
   return (
     <Bar position="fixed" open={open}>
       <Box css={HeaderToolbarWrap}>

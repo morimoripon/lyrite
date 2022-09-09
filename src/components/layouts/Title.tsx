@@ -11,7 +11,6 @@ type Props = {
 const Title = ({ title, setTitle }: Props) => {
 
   const changeTitle = (newTitle: string) => {
-    console.log(newTitle)
     setTitle(newTitle);
   };
 

@@ -10,3 +10,10 @@ export const ActionButton = css`
     margin-left: 1rem;
   }
 `;
+
+export const AddButton = css`
+  display: block;
+  margin: 0 auto;
+  font-size: 1.5rem;
+  padding: 0;
+`;
