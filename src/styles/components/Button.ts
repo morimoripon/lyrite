@@ -17,3 +17,10 @@ export const AddButton = css`
   font-size: 1.5rem;
   padding: 0;
 `;
+
+export const ButtonForIcon = css`
+  width: 2rem;
+  min-width: auto;
+  padding: 0;
+  margin-right: 1rem;
+`;

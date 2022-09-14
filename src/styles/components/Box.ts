@@ -16,12 +16,9 @@ export const WriteAreaBox = css`
   padding: 2rem 6rem;
 `;
 
-export const WriteInputBox = css`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: auto;
+export const WriteInputContainer = css`
   width: 100%;
-  align-items: center;
+  overflow: auto;
 `;
 
 export const TitleBox = css`

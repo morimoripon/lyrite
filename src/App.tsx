@@ -1,8 +1,8 @@
 import React, { createContext, useEffect, useState } from 'react'
-import { AppBar, AppBarProps, Button, createTheme, IconButton, ThemeProvider, Toolbar, Typography } from '@mui/material'
+import { AppBar, AppBarProps, Button, createTheme, IconButton, Input, ThemeProvider, Toolbar, Typography } from '@mui/material'
 import { Box } from '@mui/system'
 import WriteArea from './components/layouts/WriteArea'
-import { ActionBar, Contents, WriteAreaBox, WriteInputBox } from './styles/components/Box'
+import { ActionBar, Contents, WriteAreaBox } from './styles/components/Box'
 import { Page } from './styles/components/Page'
 import '@aws-amplify/ui-react/styles.css';
 import Header from './components/layouts/Header'
@@ -16,7 +16,7 @@ import { ActionButton, SignOutButton } from './styles/components/Button'
 import SideBar from './components/layouts/SideBar'
 import styled from '@emotion/styled'
 import { OnCreateSongSubscription, OnCreateSongSubscriptionVariables } from './types/API'
-import { MoreCurrentId } from './types/type'
+import { LyricType, MoreCurrentId } from './types/type'
 
 
 const theme = createTheme({
@@ -100,10 +100,21 @@ const PageContents = styled(Box, {
 const App = ({ user, signOut }: Props) => {
   const [ songs, setSongs ] = useState<any[]>([]);
   const [ title, setTitle ] = useState<string>('');
-  const [ lyrics, setLyrics ] = useState<string[]>(['', '', '', '', '', '']);
+  const [ lyrics, setLyrics ] = useState<LyricType[]>([
+    { content: '', id: 1 },
+    { content: '', id: 2 },
+    { content: '', id: 3 },
+    { content: '', id: 4 },
+    { content: '', id: 5 },
+    { content: '', id: 6 }
+  ]);
   const [ id, setId ] = useState<string | null>(null);
   const [ readyToWrite, setReadyToWrite ] = useState<boolean>(false);
   const [ sideBarOpened, setSideBarOpened ] = useState<boolean>(false);
+  const [ editMode, setEditMode ] = useState<boolean>(false);
+  const [ lyricColumn, setLyricColumn ] = useState<string>('3');
+  const [ lyricColumnSizeList, setLyricColumnSizeList ] = useState<string[]>(['200', '200', '200']);
+  
 
   const save = async (callback?: Function) => {
     const song = { title, lyrics: stringifyLyrics(lyrics) };
@@ -127,16 +138,24 @@ const App = ({ user, signOut }: Props) => {
     if (callback) callback();
   }
 
-  const stringifyLyrics = (lyrics: string[]): string => {
-    return lyrics.join('\n');
+  const stringifyLyrics = (lyrics: LyricType[]): string => {
+    return lyrics.map(lyric => lyric.content).join('\n');
   }
 
-  const parseLyrics = (lyrics: string): string[] => {
-    return lyrics.split('\n');
+  const parseLyrics = (lyrics: string): LyricType[] => {
+    return lyrics.split('\n').map((lyric, index) => ({ content: lyric, id: index + 1 }));
   }
 
-  const toggleSideBar = () => {
-    setSideBarOpened(!sideBarOpened);
+  const openSideBar = () => {
+    setSideBarOpened(true);
+  }
+
+  const closeSideBar = () => {
+    setSideBarOpened(false);
+  }
+
+  const toggleEditMode = () => {
+    setEditMode(!editMode);
   };
 
   const setSongInfo = (song: any) => {
@@ -148,6 +167,7 @@ const App = ({ user, signOut }: Props) => {
   const chooseSong = (id: any) => {
     const targetSong = songs.find((song) => song.id === id);
     if (targetSong) {
+      clearTimeout(timeId);
       save(() => {
         setSongInfo(targetSong);
       });
@@ -217,8 +237,22 @@ const App = ({ user, signOut }: Props) => {
   }
 
   const addSentence = () => {
-    setLyrics([ ...lyrics, '' ]);
+    setLyrics([ ...lyrics, { content: '', id: lyrics.length + 1 } ]);
   };
+
+  const handleColumnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target) return;
+    setLyricColumn(e.target.value);
+  }
+
+  const handleColumnSizeChange = (e: any, index: number) => {
+    if (!e.target) return;
+    setLyricColumnSizeList([
+      ...lyricColumnSizeList.slice(0, index),
+      e.target.value,
+      ...lyricColumnSizeList.slice(index + 1)
+    ]);
+  }
 
   useEffect(() => {
     const getData = async () => {
@@ -301,17 +335,21 @@ const App = ({ user, signOut }: Props) => {
       <UserContext.Provider value={user}>
         <SongsContext.Provider value={songs}>
           <Box css={Page}>
-            <Header user={user} signOut={signOut} save={save} open={sideBarOpened} />
-            <SideBar open={sideBarOpened} songs={songs} currentId={id} choose={chooseSong} create={createNewSong} deleteWithConfirm={deleteWithConfirm} />
+            <Header user={user} signOut={signOut} save={save} open={sideBarOpened} openSideBar={openSideBar} />
+            <SideBar open={sideBarOpened} songs={songs} currentId={id} choose={chooseSong} create={createNewSong} deleteWithConfirm={deleteWithConfirm} closeSideBar={closeSideBar} />
             <PageContents open={sideBarOpened}>
               <Box css={Contents}>
                 <Box css={ActionBar}>
                   <Button css={ActionButton} color='secondary' variant='contained' onClick={() => save()}>保存</Button>
-                  <Button css={ActionButton} color='secondary' variant='outlined' onClick={toggleSideBar}>サイドバー</Button>
+                  <Button css={ActionButton} color='secondary' variant='outlined' onClick={toggleEditMode}>編集モード</Button>
+                  <Input type='number' onChange={handleColumnChange} value={lyricColumn} />
+                  <Input type='number' onChange={(e) => handleColumnSizeChange(e, 0)} value={lyricColumnSizeList[0]} />
+                  <Input type='number' onChange={(e) => handleColumnSizeChange(e, 1)} value={lyricColumnSizeList[1]} />
+                  <Input type='number' onChange={(e) => handleColumnSizeChange(e, 2)} value={lyricColumnSizeList[2]} />
                 </Box>
                 <Box css={WriteAreaBox}>
                   <Title title={title} setTitle={setTitle}/>
-                  <WriteArea lyrics={lyrics} setLyrics={setLyrics} addSentence={addSentence}/>
+                  <WriteArea lyrics={lyrics} lyricColumn={lyricColumn} lyricColumnSizeList={lyricColumnSizeList} editMode={editMode} setLyrics={setLyrics} addSentence={addSentence}/>
                 </Box>
               </Box>
             </PageContents>

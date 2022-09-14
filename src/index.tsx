@@ -12,11 +12,9 @@ Amplify.configure(awsExports);
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
-  <React.StrictMode>
-    <Authenticator>
-      {({ signOut, user }) => (
-        <App signOut={signOut} user={user} />
-      )}
-    </Authenticator>
-  </React.StrictMode>
+  <Authenticator>
+    {({ signOut, user }) => (
+      <App signOut={signOut} user={user} />
+    )}
+  </Authenticator>
 );

@@ -18,7 +18,7 @@ const TitleInput = ({ title, changeTitle }: Props) => {
     }
   };
   return (
-    <Input sx={{ borderColor: 'transparent' }} css={TitleStyle} onChange={handleChange} value={title} />
+    <Input multiline placeholder='タイトルを入力' sx={{ borderColor: 'transparent' }} css={TitleStyle} onChange={handleChange} value={title} />
   )
 }
 

@@ -1,14 +1,16 @@
-import { Input } from '@mui/material';
-import { Box } from '@mui/system'
+import { Box, Input } from '@mui/material';
 import React, { useState } from 'react'
 import { WriteInputStyle } from '../../styles/components/Input';
+import { css } from "@emotion/react";
 
 type Props = {
   lyric: string,
-  changeLyrics: (value: string) => void
+  editMode: boolean,
+  width: number,
+  changeLyrics: Function/* (value: string) => void */
 }
 
-const WriteInput = ({ lyric, changeLyrics }: Props) => {
+const WriteInput = ({ lyric, editMode, width, changeLyrics }: Props) => {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     console.log('e', e)
     console.log('target', e.target)
@@ -18,7 +20,25 @@ const WriteInput = ({ lyric, changeLyrics }: Props) => {
     }
   };
   return (
-    <Input sx={{ borderColor: 'transparent' }} css={WriteInputStyle} onChange={handleChange} value={lyric} />
+    <Box
+      css={css`
+        width: ${width}px;
+      `}
+    >
+      <Input 
+        css={css`
+          width: calc(100% - 0.5rem);
+          &::before {
+            border: none;
+          }
+          input {
+            padding: 1px 0 2px;
+          }
+        `}
+        onChange={handleChange}
+        value={lyric}
+      />
+    </Box>
   )
 }
 
