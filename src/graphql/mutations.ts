@@ -11,8 +11,11 @@ export const createSong = /* GraphQL */ `
       id
       title
       lyrics
+      columns
+      columnWidths
       createdAt
       updatedAt
+      username
     }
   }
 `;
@@ -25,8 +28,11 @@ export const updateSong = /* GraphQL */ `
       id
       title
       lyrics
+      columns
+      columnWidths
       createdAt
       updatedAt
+      username
     }
   }
 `;
@@ -39,8 +45,11 @@ export const deleteSong = /* GraphQL */ `
       id
       title
       lyrics
+      columns
+      columnWidths
       createdAt
       updatedAt
+      username
     }
   }
 `;

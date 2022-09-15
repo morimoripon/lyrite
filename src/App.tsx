@@ -54,48 +54,35 @@ export const UserContext = createContext<any>(null);
 export const SongsContext = createContext<any>(null);
 
 export const drawerWidth = '240';
-
-interface BarProps extends AppBarProps {
-  open?: boolean;
-}
-
 export const NO_TITLE = '(no title)';
 
-export const Bar = styled(AppBar, {
-  shouldForwardProp: (prop) => prop !== 'open',
-})<any>(({ theme, open }) => ({
-  transition: theme.transitions.create(['margin', 'width'], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  ...(open && {
-    width: `calc(100% - ${drawerWidth}px)`,
-    marginLeft: `${drawerWidth}px`,
+const withSideBarAnimation = (component: any) => {
+  return styled(component, {
+    shouldForwardProp: (prop) => prop !== 'open',
+  })<any>(({ theme, open }) => ({
+    width: '100%',
     transition: theme.transitions.create(['margin', 'width'], {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
     }),
-  }),
-}));
-
-const PageContents = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'open',
-})<any>(({ theme, open }) => ({
-  width: '100%',
-  transition: theme.transitions.create(['margin', 'width'], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  ...(open && {
-    width: `calc(100% - ${drawerWidth}px)`,
-    marginLeft: `${drawerWidth}px`,
-    transition: theme.transitions.create(['margin', 'width'], {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
+    ...(open && {
+      width: `calc(100% - ${drawerWidth}px)`,
+      marginLeft: `${drawerWidth}px`,
+      transition: theme.transitions.create(['margin', 'width'], {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
     }),
-  }),
-}));
+  }));
+}
 
+export const Bar = withSideBarAnimation(AppBar);
+
+const PageContents = withSideBarAnimation(Box);
+
+const defaultLyricColumn = 3;
+const defaultLyricColumnSize = '200';
+const defaultLyricColumnSizeList = new Array(defaultLyricColumn).fill(defaultLyricColumnSize);
 
 const App = ({ user, signOut }: Props) => {
   const [ songs, setSongs ] = useState<any[]>([]);
@@ -112,12 +99,16 @@ const App = ({ user, signOut }: Props) => {
   const [ readyToWrite, setReadyToWrite ] = useState<boolean>(false);
   const [ sideBarOpened, setSideBarOpened ] = useState<boolean>(false);
   const [ editMode, setEditMode ] = useState<boolean>(false);
-  const [ lyricColumn, setLyricColumn ] = useState<string>('3');
-  const [ lyricColumnSizeList, setLyricColumnSizeList ] = useState<string[]>(['200', '200', '200']);
+  const [ lyricColumn, setLyricColumn ] = useState<string>(String(defaultLyricColumn));
+  const [ lyricColumnSizeList, setLyricColumnSizeList ] = useState<string[]>(defaultLyricColumnSizeList);
   
-
   const save = async (callback?: Function) => {
-    const song = { title, lyrics: stringifyLyrics(lyrics) };
+    const song = { 
+      title, 
+      lyrics: stringifyLyrics(lyrics),
+      columns: Number(lyricColumn) || defaultLyricColumn,
+      columnWidths: lyricColumnSizeList.join('\n') || defaultLyricColumnSizeList.join('\n')
+    };
     if (id) {
       try {
         await API.graphql(graphqlOperation(updateSong, { input: { ...song, id }}));
@@ -128,7 +119,7 @@ const App = ({ user, signOut }: Props) => {
       console.log('更新しました')
     } else {
       try {
-        await API.graphql(graphqlOperation(createSong, { input: song }));
+        await API.graphql(graphqlOperation(createSong, { input: { ...song, username: user.username } }));
       } catch (e) {
         alert('データ更新ができませんでした。')
         return;
@@ -162,6 +153,8 @@ const App = ({ user, signOut }: Props) => {
     setId(song.id);
     setTitle(song.title);
     setLyrics(parseLyrics(song.lyrics));
+    setLyricColumn(String(song.columns));
+    setLyricColumnSizeList(song.columnWidths.split('\n'));
   }
 
   const chooseSong = (id: any) => {
@@ -175,22 +168,24 @@ const App = ({ user, signOut }: Props) => {
   }
 
   const createNewSong = async () => {
-    const song = { title: '', lyrics: '' };
+    const song = { 
+      title: '', 
+      lyrics: '',
+      columns: defaultLyricColumn,
+      columnWidths: defaultLyricColumnSizeList.join('\n')
+    };
     try {
-      await API.graphql(graphqlOperation(createSong, { input: song }));
-      console.log('作成しました')
+      await API.graphql(graphqlOperation(createSong, { input: { ...song, username: user.username } }));
     } catch (e) {
-      alert('データ更新ができませんでした。')
+      alert('データ作成ができませんでした。')
       return;
     }
   }
 
   const reflectData = (updatedSong: any) => {
-    let isCreate;
     setSongs((prevState: any) => {
       const targetIndex = prevState.findIndex((song: any) => song?.id === updatedSong.id);
-      isCreate = targetIndex === -1;
-      if (!isCreate) {
+      if (targetIndex !== -1) {
         return [
           ...prevState.slice(0, targetIndex),
           updatedSong,
@@ -203,9 +198,6 @@ const App = ({ user, signOut }: Props) => {
         ];
       } 
     });
-    if (isCreate) {
-      setSongInfo(updatedSong);
-    }
   }
 
   const reflectDeleteData = (deletedSong: any) => {
@@ -217,7 +209,7 @@ const App = ({ user, signOut }: Props) => {
           ...prevState.slice(targetIndex + 1)
         ];
       } else {
-        return [ ...prevState ];
+        return prevState;
       }
     });
   }
@@ -242,6 +234,7 @@ const App = ({ user, signOut }: Props) => {
 
   const handleColumnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target) return;
+    console.log(e)
     setLyricColumn(e.target.value);
   }
 
@@ -255,10 +248,17 @@ const App = ({ user, signOut }: Props) => {
   }
 
   useEffect(() => {
+    const userFilter = {
+      username: {
+        'eq': user.username
+      }
+    };
+
     const getData = async () => {
       let songData;
       try {
-        songData = await API.graphql(graphqlOperation(listSongs)) as GraphQLResult<any>;
+        songData = await API.graphql(graphqlOperation(listSongs, { filter: userFilter })) as GraphQLResult<any>;
+        console.log('songData', songData)
       } catch (e) {
         alert('データを取得できませんでした。再読み込みを試してみてください。')
         return;
@@ -270,19 +270,16 @@ const App = ({ user, signOut }: Props) => {
       }
       setSongs(items);
       if (items.length) {
-        const { lyrics, title, id } = items[0];
-        setTitle(title);
-        setLyrics(parseLyrics(lyrics));
-        setId(id);
+        setSongInfo(items[0]);
       }
       setReadyToWrite(true);
     }
 
     getData();
 
-    const subscriptionUpdate = API.graphql(graphqlOperation(onUpdateSong)) as any/* Observable<object> */;
+    const subscriptionUpdate = API.graphql(graphqlOperation(onUpdateSong, { filter: userFilter })) as any/* Observable<object> */;
     subscriptionUpdate.subscribe({
-      next: ({ provider, value }: { provider: any, value: any }/* OnCreateSongSubscriptionVariables */) => {
+      next: ({ provider, value }: { provider: any, value: any }) => {
         const updatedSong = value.data.onUpdateSong;
         reflectData(updatedSong);
       },
@@ -291,20 +288,21 @@ const App = ({ user, signOut }: Props) => {
       }
     });
 
-    const subscriptionCreate = API.graphql(graphqlOperation(onCreateSong)) as any/* Observable<object> */;
+    const subscriptionCreate = API.graphql(graphqlOperation(onCreateSong, { filter: userFilter })) as any/* Observable<object> */;
     subscriptionCreate.subscribe({
-      next: ({ provider, value }: { provider: any, value: any }/* OnCreateSongSubscriptionVariables */) => {
+      next: ({ provider, value }: { provider: any, value: any }) => {
         const createdSong = value.data.onCreateSong;
         reflectData(createdSong);
+        setSongInfo(createdSong);
       },
       error: (e: any) => {
         console.log(e.error.errors[0].message)
       }
     });
 
-    const subscriptionDelete = API.graphql(graphqlOperation(onDeleteSong)) as any/* Observable<object> */;
+    const subscriptionDelete = API.graphql(graphqlOperation(onDeleteSong, { filter: userFilter })) as any/* Observable<object> */;
     subscriptionDelete.subscribe({
-      next: ({ provider, value }: { provider: any, value: any }/* OnCreateSongSubscriptionVariables */) => {
+      next: ({ provider, value }: { provider: any, value: any }) => {
         const DeletedSong = value.data.onDeleteSong;
         reflectDeleteData(DeletedSong);
       },
@@ -321,6 +319,25 @@ const App = ({ user, signOut }: Props) => {
   }, []);
 
   useEffect(() => {
+    const columnAmount = Number(lyricColumn);
+    if (columnAmount) {
+      const listLength = lyricColumnSizeList.length;
+      if (columnAmount < listLength) {
+        setLyricColumnSizeList([ ...lyricColumnSizeList.slice(0, columnAmount) ]);
+      } else if (columnAmount > listLength) {
+        setLyricColumnSizeList([ ...lyricColumnSizeList, ...new Array(columnAmount - listLength).fill(defaultLyricColumnSize) ]);
+      }
+    }
+    
+  }, [ lyricColumn ]);
+
+  useEffect(() => {
+    if (!songs.find(song => song.id === id) && songs.length) {
+      setSongInfo(songs[0]);
+    }
+  }, [ songs ]);
+
+  useEffect(() => {
     if (timeId) clearTimeout(timeId);
     if (!readyToWrite) return;
 
@@ -328,7 +345,7 @@ const App = ({ user, signOut }: Props) => {
       save();
     }, AUTOSAVE_TIME);
     
-  }, [ title, lyrics ])
+  }, [ title, lyrics, lyricColumn, lyricColumnSizeList ]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -342,10 +359,10 @@ const App = ({ user, signOut }: Props) => {
                 <Box css={ActionBar}>
                   <Button css={ActionButton} color='secondary' variant='contained' onClick={() => save()}>保存</Button>
                   <Button css={ActionButton} color='secondary' variant='outlined' onClick={toggleEditMode}>編集モード</Button>
-                  <Input type='number' onChange={handleColumnChange} value={lyricColumn} />
-                  <Input type='number' onChange={(e) => handleColumnSizeChange(e, 0)} value={lyricColumnSizeList[0]} />
-                  <Input type='number' onChange={(e) => handleColumnSizeChange(e, 1)} value={lyricColumnSizeList[1]} />
-                  <Input type='number' onChange={(e) => handleColumnSizeChange(e, 2)} value={lyricColumnSizeList[2]} />
+                  <Input type='number' onChange={handleColumnChange} value={lyricColumn} inputProps={{ min: 1, max: 10 }} />
+                  {lyricColumnSizeList.map((size, index) => (
+                    <Input key={index} type='number' onChange={(e) => handleColumnSizeChange(e, index)} value={size} inputProps={{ min: 50, max: 1000 }} />
+                  ))}
                 </Box>
                 <Box css={WriteAreaBox}>
                   <Title title={title} setTitle={setTitle}/>

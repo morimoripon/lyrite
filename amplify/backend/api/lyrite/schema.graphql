@@ -6,6 +6,9 @@ type Song @model {
   id: ID!
   title: String
   lyrics: String
+  columns: Int
+  columnWidths: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+  username: String!
 }

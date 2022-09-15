@@ -8,8 +8,11 @@ export const getSong = /* GraphQL */ `
       id
       title
       lyrics
+      columns
+      columnWidths
       createdAt
       updatedAt
+      username
     }
   }
 `;
@@ -24,8 +27,11 @@ export const listSongs = /* GraphQL */ `
         id
         title
         lyrics
+        columns
+        columnWidths
         createdAt
         updatedAt
+        username
       }
       nextToken
     }
