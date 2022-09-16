@@ -1,8 +1,8 @@
-import { Button, Menu, MenuItem } from '@mui/material';
+import { Button, Input, Menu, MenuItem, Slider } from '@mui/material';
 import { Box } from '@mui/system'
-import React, { useState } from 'react'
-import { WriteAreaBox, WriteInputContainer } from '../../styles/components/Box'
-import { AddButton } from '../../styles/components/Button';
+import React, { useContext, useState } from 'react'
+import { SliderBox, SongInfoBox, WriteAreaBox, WriteInputContainer } from '../../styles/components/Box'
+import { AddButton, AddSentenceButton } from '../../styles/components/Button';
 import WriteInput from '../elements/WriteInput';
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { ListManager } from "react-beautiful-dnd-grid";
@@ -18,6 +18,8 @@ import type {
 import { LyricType, MenuCurrentId } from '../../types/type';
 import WriteEditMode from '../elements/WriteEditMode';
 import { css } from "@emotion/react";
+import ColumnChangeSection from './ColumnChangeSection';
+import { SliderStyle } from '../../styles/components/Input';
 
 type Props = {
   lyrics: LyricType[],
@@ -25,6 +27,8 @@ type Props = {
   lyricColumnSizeList: string[],
   editMode: boolean,
   setLyrics: Function,
+  setLyricColumn: Function,
+  setLyricColumnSizeList: Function
   addSentence: Function
 }
 
@@ -42,7 +46,7 @@ const reorder = (
   return result;
 };
 
-const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyrics, addSentence }: Props) => {
+const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyrics, setLyricColumn, setLyricColumnSizeList, addSentence }: Props) => {
   const [anchorElem, setAnchorElem] = useState<HTMLElement | null>(null);
   const [menuCurrentId, setMenuCurrentId] = useState<MenuCurrentId>(null);
   const menuOpen = Boolean(anchorElem);
@@ -108,6 +112,27 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
     return lyrics.findIndex(lyric => lyric.id === id);
   }
 
+  const handleColumnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target) return;
+    console.log(e)
+    setLyricColumn(e.target.value);
+  }
+
+  const handleColumnSizeChange = (e: any, index: number) => {
+    if (!e.target) return;
+    setLyricColumnSizeList([
+      ...lyricColumnSizeList.slice(0, index),
+      e.target.value,
+      ...lyricColumnSizeList.slice(index + 1)
+    ]);
+  }
+
+  const gridColumnTemplateValue = window.matchMedia('(max-width: 960px)').matches ? (
+    lyricColumnSizeList.map(size => `${Math.floor(Number(size) * 0.75)}px`).join(' ')
+  ) : (
+    lyricColumnSizeList.map(size => `${size}px`).join(' ')
+  ) 
+
   return ( 
     <Box css={WriteInputContainer}>
       {editMode ? (
@@ -139,7 +164,7 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
         <Box 
           css={css`
             display: grid;
-            grid-template-columns: ${lyricColumnSizeList.map(size => `${size}px`).join(' ')};
+            grid-template-columns: ${gridColumnTemplateValue};
             grid-template-rows: auto;
           `}
         >
@@ -147,54 +172,31 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
             const width = getWidth(index);
             return <WriteInput key={index} lyric={lyric.content} editMode={editMode} width={width} changeLyrics={(value: any) => changeLyrics(index, value, lyric.id)} />
           })}
+          <Button key='addButton' css={AddSentenceButton} color='secondary' variant='outlined' onClick={() => addSentence()}>+</Button>
          </Box>
       )}
-      
-      <Button css={AddButton} color='secondary' variant='outlined' onClick={() => addSentence()}>+</Button>
+      <Box css={SongInfoBox}>
+        <Box 
+          css={css`
+            display: grid;
+            grid-template-columns: ${gridColumnTemplateValue};
+            grid-template-rows: auto;
+          `}
+        >
+          {lyricColumnSizeList.map((size, index) => (
+            <Box key={index} css={SliderBox}>
+              {/* <Input type='number' onChange={(e) => handleColumnSizeChange(e, index)} value={size} inputProps={{ min: 50, max: 1000 }} /> */}
+              <Slider color='secondary' css={SliderStyle} min={80} max={800} onChange={(e) => handleColumnSizeChange(e, index)} value={Number(size)} aria-label="Default" valueLabelDisplay="auto" />
+            </Box>
+          ))}
+        </Box>
+        <ColumnChangeSection
+          lyricColumn={lyricColumn}
+          setLyricColumn={setLyricColumn}
+        />
+      </Box>
     </Box>
   );
 }
 
 export default WriteArea
-
-/* return ( 
-  <div>
-    <DragDropContext onDragEnd={onDragEnd}>
-      <Droppable droppableId="droppable">
-        {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
-          <div
-            {...provided.droppableProps}
-            ref={provided.innerRef}
-            style={getListStyle(snapshot.isDraggingOver)}
-          >
-            <Box css={WriteInputBox}>
-              {lyrics.map((lyric, index) => (
-                <Draggable
-                  key={`${lyric.id}`}
-                  draggableId={`${lyric.id}`}
-                  index={index}
-                >
-                  {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      style={getItemStyle(
-                        snapshot.isDragging,
-                        provided.draggableProps.style
-                      )}
-                    >
-                      <WriteInput key={index} lyric={lyric.content} editMode={editMode} changeLyrics={(value) => changeLyrics(index, value, lyric.id)} />
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </Box>
-          </div>
-        )}
-      </Droppable>
-    </DragDropContext>
-    <Button css={AddButton} color='secondary' variant='outlined' onClick={() => addSentence()}>+</Button>
-  </div>
-); */

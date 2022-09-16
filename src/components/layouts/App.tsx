@@ -1,22 +1,22 @@
 import React, { createContext, useEffect, useState } from 'react'
 import { AppBar, AppBarProps, Button, createTheme, IconButton, Input, ThemeProvider, Toolbar, Typography } from '@mui/material'
 import { Box } from '@mui/system'
-import WriteArea from './components/layouts/WriteArea'
-import { ActionBar, Contents, WriteAreaBox } from './styles/components/Box'
-import { Page } from './styles/components/Page'
+import WriteArea from './WriteArea'
+import { ActionBar, Contents, WriteAreaBox } from '../../styles/components/Box'
+import { Page } from '../../styles/components/Page'
 import '@aws-amplify/ui-react/styles.css';
-import Header from './components/layouts/Header'
+import Header from './Header'
 
 import API, { graphqlOperation, GraphQLResult } from '@aws-amplify/api';
-import { createSong, deleteSong, updateSong } from './graphql/mutations';
-import { listSongs } from './graphql/queries';
-import { onCreateSong, onDeleteSong, onUpdateSong } from './graphql/subscriptions'
-import Title from './components/layouts/Title'
-import { ActionButton, SignOutButton } from './styles/components/Button'
-import SideBar from './components/layouts/SideBar'
+import { createSong, deleteSong, updateSong } from '../../graphql/mutations';
+import { listSongs } from '../../graphql/queries';
+import { onCreateSong, onDeleteSong, onUpdateSong } from '../../graphql/subscriptions'
+import Title from './Title'
+import { ActionButton, SignOutButton } from '../../styles/components/Button'
+import SideBar from './SideBar'
 import styled from '@emotion/styled'
-import { OnCreateSongSubscription, OnCreateSongSubscriptionVariables } from './types/API'
-import { LyricType, MoreCurrentId } from './types/type'
+import { OnCreateSongSubscription, OnCreateSongSubscriptionVariables } from '../../types/API'
+import { LyricType, MoreCurrentId } from '../../types/type'
 
 
 const theme = createTheme({
@@ -50,13 +50,18 @@ const AUTOSAVE_TIME = 3000;
 
 let timeId: any = null;
 
-export const UserContext = createContext<any>(null);
-export const SongsContext = createContext<any>(null);
+/* export const LyricColumnSizeListContext = createContext(
+  {} as {
+    lyricColumnSizeList: string[]
+    setLyricColumnSizeList: React.Dispatch<React.SetStateAction<string[]>>
+  }
+); */
 
 export const drawerWidth = '240';
 export const NO_TITLE = '(no title)';
 
 const withSideBarAnimation = (component: any) => {
+  console.log('window.matchMedia', window.matchMedia('(max-width: 960px)'))
   return styled(component, {
     shouldForwardProp: (prop) => prop !== 'open',
   })<any>(({ theme, open }) => ({
@@ -65,7 +70,7 @@ const withSideBarAnimation = (component: any) => {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    ...(open && {
+    ...(open && window.matchMedia('(min-width: 961px)').matches && {
       width: `calc(100% - ${drawerWidth}px)`,
       marginLeft: `${drawerWidth}px`,
       transition: theme.transitions.create(['margin', 'width'], {
@@ -232,20 +237,20 @@ const App = ({ user, signOut }: Props) => {
     setLyrics([ ...lyrics, { content: '', id: lyrics.length + 1 } ]);
   };
 
-  const handleColumnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  /* const handleColumnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target) return;
     console.log(e)
     setLyricColumn(e.target.value);
-  }
+  } */
 
-  const handleColumnSizeChange = (e: any, index: number) => {
+  /* const handleColumnSizeChange = (e: any, index: number) => {
     if (!e.target) return;
     setLyricColumnSizeList([
       ...lyricColumnSizeList.slice(0, index),
       e.target.value,
       ...lyricColumnSizeList.slice(index + 1)
     ]);
-  }
+  } */
 
   useEffect(() => {
     const userFilter = {
@@ -312,10 +317,11 @@ const App = ({ user, signOut }: Props) => {
     });
       
     
-    /* return () => {
+    return () => {
       subscriptionUpdate.unsubscribe();
       subscriptionCreate.unsubscribe();
-    } */
+      subscriptionDelete.unsubscribe();
+    }
   }, []);
 
   useEffect(() => {
@@ -349,30 +355,53 @@ const App = ({ user, signOut }: Props) => {
 
   return (
     <ThemeProvider theme={theme}>
-      <UserContext.Provider value={user}>
-        <SongsContext.Provider value={songs}>
-          <Box css={Page}>
-            <Header user={user} signOut={signOut} save={save} open={sideBarOpened} openSideBar={openSideBar} />
-            <SideBar open={sideBarOpened} songs={songs} currentId={id} choose={chooseSong} create={createNewSong} deleteWithConfirm={deleteWithConfirm} closeSideBar={closeSideBar} />
-            <PageContents open={sideBarOpened}>
-              <Box css={Contents}>
-                <Box css={ActionBar}>
-                  <Button css={ActionButton} color='secondary' variant='contained' onClick={() => save()}>保存</Button>
-                  <Button css={ActionButton} color='secondary' variant='outlined' onClick={toggleEditMode}>編集モード</Button>
-                  <Input type='number' onChange={handleColumnChange} value={lyricColumn} inputProps={{ min: 1, max: 10 }} />
-                  {lyricColumnSizeList.map((size, index) => (
-                    <Input key={index} type='number' onChange={(e) => handleColumnSizeChange(e, index)} value={size} inputProps={{ min: 50, max: 1000 }} />
-                  ))}
-                </Box>
-                <Box css={WriteAreaBox}>
-                  <Title title={title} setTitle={setTitle}/>
-                  <WriteArea lyrics={lyrics} lyricColumn={lyricColumn} lyricColumnSizeList={lyricColumnSizeList} editMode={editMode} setLyrics={setLyrics} addSentence={addSentence}/>
-                </Box>
-              </Box>
-            </PageContents>
+      <Box css={Page}>
+        <Header
+          user={user}
+          signOut={signOut}
+          save={save}
+          open={sideBarOpened}
+          openSideBar={openSideBar}
+        />
+        <SideBar
+          open={sideBarOpened}
+          songs={songs}
+          currentId={id}
+          choose={chooseSong}
+          create={createNewSong}
+          deleteWithConfirm={deleteWithConfirm}
+          closeSideBar={closeSideBar}
+        />
+        <PageContents
+          open={sideBarOpened}
+        >
+          <Box css={Contents}>
+            <Box css={ActionBar}>
+              <Button css={ActionButton} color='secondary' variant='contained' onClick={() => save()}>保存</Button>
+              <Button css={ActionButton} color='secondary' variant='outlined' onClick={toggleEditMode}>編集モード</Button>
+            </Box>
+            <Box css={WriteAreaBox}>
+              <Title
+                title={title}
+                setTitle={setTitle}
+              />
+
+              {/* <LyricColumnSizeListContext.Provider value={{ lyricColumnSizeList, setLyricColumnSizeList }}> */}
+              <WriteArea
+                lyrics={lyrics}
+                lyricColumn={lyricColumn}
+                lyricColumnSizeList={lyricColumnSizeList}
+                editMode={editMode}
+                setLyricColumn={setLyricColumn}
+                setLyricColumnSizeList={setLyricColumnSizeList}
+                setLyrics={setLyrics}
+                addSentence={addSentence}
+              />
+              {/* </LyricColumnSizeListContext.Provider> */}
+            </Box>
           </Box>
-        </SongsContext.Provider>
-      </UserContext.Provider>
+        </PageContents>
+      </Box>
     </ThemeProvider>
   )
 }

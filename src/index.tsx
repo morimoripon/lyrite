@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './styles/globals.css';
-import App from './App';
+import App from './components/layouts/App';
 import { Amplify, Hub } from "aws-amplify";
 import { Authenticator } from '@aws-amplify/ui-react';
 import awsExports from './aws-exports';

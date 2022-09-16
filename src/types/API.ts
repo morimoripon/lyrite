@@ -6,15 +6,21 @@ export type CreateSongInput = {
   id?: string | null,
   title?: string | null,
   lyrics?: string | null,
+  columns?: number | null,
+  columnWidths?: string | null,
   createdAt?: string | null,
   updatedAt?: string | null,
+  username: string,
 };
 
 export type ModelSongConditionInput = {
   title?: ModelStringInput | null,
   lyrics?: ModelStringInput | null,
+  columns?: ModelIntInput | null,
+  columnWidths?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
+  username?: ModelStringInput | null,
   and?: Array< ModelSongConditionInput | null > | null,
   or?: Array< ModelSongConditionInput | null > | null,
   not?: ModelSongConditionInput | null,
@@ -60,21 +66,39 @@ export type ModelSizeInput = {
   between?: Array< number | null > | null,
 };
 
+export type ModelIntInput = {
+  ne?: number | null,
+  eq?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  between?: Array< number | null > | null,
+  attributeExists?: boolean | null,
+  attributeType?: ModelAttributeTypes | null,
+};
+
 export type Song = {
   __typename: "Song",
   id: string,
   title?: string | null,
   lyrics?: string | null,
+  columns?: number | null,
+  columnWidths?: string | null,
   createdAt?: string | null,
   updatedAt?: string | null,
+  username: string,
 };
 
 export type UpdateSongInput = {
   id: string,
   title?: string | null,
   lyrics?: string | null,
+  columns?: number | null,
+  columnWidths?: string | null,
   createdAt?: string | null,
   updatedAt?: string | null,
+  username?: string | null,
 };
 
 export type DeleteSongInput = {
@@ -85,8 +109,11 @@ export type ModelSongFilterInput = {
   id?: ModelIDInput | null,
   title?: ModelStringInput | null,
   lyrics?: ModelStringInput | null,
+  columns?: ModelIntInput | null,
+  columnWidths?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
+  username?: ModelStringInput | null,
   and?: Array< ModelSongFilterInput | null > | null,
   or?: Array< ModelSongFilterInput | null > | null,
   not?: ModelSongFilterInput | null,
@@ -118,8 +145,11 @@ export type ModelSubscriptionSongFilterInput = {
   id?: ModelSubscriptionIDInput | null,
   title?: ModelSubscriptionStringInput | null,
   lyrics?: ModelSubscriptionStringInput | null,
+  columns?: ModelSubscriptionIntInput | null,
+  columnWidths?: ModelSubscriptionStringInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
   updatedAt?: ModelSubscriptionStringInput | null,
+  username?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionSongFilterInput | null > | null,
   or?: Array< ModelSubscriptionSongFilterInput | null > | null,
 };
@@ -154,6 +184,18 @@ export type ModelSubscriptionStringInput = {
   notIn?: Array< string | null > | null,
 };
 
+export type ModelSubscriptionIntInput = {
+  ne?: number | null,
+  eq?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  between?: Array< number | null > | null,
+  in?: Array< number | null > | null,
+  notIn?: Array< number | null > | null,
+};
+
 export type CreateSongMutationVariables = {
   input: CreateSongInput,
   condition?: ModelSongConditionInput | null,
@@ -165,8 +207,11 @@ export type CreateSongMutation = {
     id: string,
     title?: string | null,
     lyrics?: string | null,
+    columns?: number | null,
+    columnWidths?: string | null,
     createdAt?: string | null,
     updatedAt?: string | null,
+    username: string,
   } | null,
 };
 
@@ -181,8 +226,11 @@ export type UpdateSongMutation = {
     id: string,
     title?: string | null,
     lyrics?: string | null,
+    columns?: number | null,
+    columnWidths?: string | null,
     createdAt?: string | null,
     updatedAt?: string | null,
+    username: string,
   } | null,
 };
 
@@ -197,8 +245,11 @@ export type DeleteSongMutation = {
     id: string,
     title?: string | null,
     lyrics?: string | null,
+    columns?: number | null,
+    columnWidths?: string | null,
     createdAt?: string | null,
     updatedAt?: string | null,
+    username: string,
   } | null,
 };
 
@@ -212,8 +263,11 @@ export type GetSongQuery = {
     id: string,
     title?: string | null,
     lyrics?: string | null,
+    columns?: number | null,
+    columnWidths?: string | null,
     createdAt?: string | null,
     updatedAt?: string | null,
+    username: string,
   } | null,
 };
 
@@ -231,8 +285,11 @@ export type ListSongsQuery = {
       id: string,
       title?: string | null,
       lyrics?: string | null,
+      columns?: number | null,
+      columnWidths?: string | null,
       createdAt?: string | null,
       updatedAt?: string | null,
+      username: string,
     } | null >,
     nextToken?: string | null,
   } | null,
@@ -248,8 +305,11 @@ export type OnCreateSongSubscription = {
     id: string,
     title?: string | null,
     lyrics?: string | null,
+    columns?: number | null,
+    columnWidths?: string | null,
     createdAt?: string | null,
     updatedAt?: string | null,
+    username: string,
   } | null,
 };
 
@@ -263,8 +323,11 @@ export type OnUpdateSongSubscription = {
     id: string,
     title?: string | null,
     lyrics?: string | null,
+    columns?: number | null,
+    columnWidths?: string | null,
     createdAt?: string | null,
     updatedAt?: string | null,
+    username: string,
   } | null,
 };
 
@@ -278,7 +341,10 @@ export type OnDeleteSongSubscription = {
     id: string,
     title?: string | null,
     lyrics?: string | null,
+    columns?: number | null,
+    columnWidths?: string | null,
     createdAt?: string | null,
     updatedAt?: string | null,
+    username: string,
   } | null,
 };

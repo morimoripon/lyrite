@@ -30,6 +30,7 @@ const WriteEditMode = ({ lyric, id, width, menuOpen, selected, setMenuTarget }: 
         border: solid 1px #eee;
         transition: border-color 0.2s ease;
         margin-right: 0.5rem;
+        font-size: 1rem;
 
         &:hover {
           border-color: #11aaff;
@@ -44,6 +45,10 @@ const WriteEditMode = ({ lyric, id, width, menuOpen, selected, setMenuTarget }: 
             opacity: 1;
           }
         `}
+
+        @media screen and (max-width: 960px) {
+          font-size: 0.75rem;
+        }
       `}
     >
       <Box 

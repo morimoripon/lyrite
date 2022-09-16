@@ -26,15 +26,7 @@ const WriteInput = ({ lyric, editMode, width, changeLyrics }: Props) => {
       `}
     >
       <Input 
-        css={css`
-          width: calc(100% - 0.5rem);
-          &::before {
-            border: none;
-          }
-          input {
-            padding: 1px 0 2px;
-          }
-        `}
+        css={WriteInputStyle}
         onChange={handleChange}
         value={lyric}
       />

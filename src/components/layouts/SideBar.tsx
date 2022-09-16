@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { AppBar, Button, createTheme, Divider, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText, Menu, MenuItem, ThemeProvider, Toolbar, Typography } from '@mui/material'
+import { AppBar, Button, createTheme, Divider, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText, Menu, MenuItem, SwipeableDrawer, ThemeProvider, Toolbar, Typography } from '@mui/material'
 import { Box } from '@mui/system'
 import { HeaderToolbarWrap } from '../../styles/components/Header'
 import { ActionButton, AddButton, SignOutButton } from '../../styles/components/Button'
-import { drawerWidth, NO_TITLE } from '../../App'
+import { drawerWidth, NO_TITLE } from './App'
 import { SideBarListItem } from '../../styles/components/List'
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
 import { Ellipsis } from '../../styles/components/Text'
@@ -23,8 +23,8 @@ type Props = {
 }
 
 const SideBar = ({ open, songs, currentId, choose, create, deleteWithConfirm, closeSideBar }: Props) => {
-  const [anchorElem, setAnchorElem] = useState<HTMLElement | null>(null);
-  const [moreCurrentId, setMoreCurrentId] = useState<MoreCurrentId>(null);
+  const [ anchorElem, setAnchorElem ] = useState<HTMLElement | null>(null);
+  const [ moreCurrentId, setMoreCurrentId ] = useState<MoreCurrentId>(null);
   const menuOpen = Boolean(anchorElem);
 
 
@@ -53,12 +53,15 @@ const SideBar = ({ open, songs, currentId, choose, create, deleteWithConfirm, cl
     }
   }
 
-  const handleClickCloseArrow = () => {
+  const handleClickClose = () => {
     closeSideBar();
   }
 
+  const sideBarVariant = window.matchMedia('(max-width: 960px)').matches ? 'temporary' : 'persistent';
+
   return (
-    <Drawer variant="persistent" anchor="left" open={open}
+    <Drawer variant={sideBarVariant} anchor="left" open={open}
+      onClose={handleClickClose}
       sx={{
         width: `${drawerWidth}px`,
         flexShrink: 0,
@@ -90,7 +93,7 @@ const SideBar = ({ open, songs, currentId, choose, create, deleteWithConfirm, cl
               css={css`
                 width: 1.2rem;
               `}
-              onClick={handleClickCloseArrow}
+              onClick={handleClickClose}
             />
           </Button>
         </Box>
@@ -141,3 +144,15 @@ const SideBar = ({ open, songs, currentId, choose, create, deleteWithConfirm, cl
 }
 
 export default SideBar
+
+
+/* <Drawer variant="persistent" anchor="left" open={open}
+      sx={{
+        width: `${drawerWidth}px`,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
+          width: `${drawerWidth}px`,
+          boxSizing: 'border-box',
+        },
+      }}
+    > */

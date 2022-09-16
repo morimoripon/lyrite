@@ -1,8 +1,13 @@
 import { css } from "@emotion/react";
 
 export const SignOutButton = css`
-  margin-left: 1rem;
+  margin-left: 0.5rem;
   font-size: 0.8rem;
+
+  @media screen and (max-width: 960px) {
+    font-size: 0.625rem;
+    padding: 0.1rem;
+  }
 `;
 
 export const ActionButton = css`
@@ -18,9 +23,21 @@ export const AddButton = css`
   padding: 0;
 `;
 
+export const AddSentenceButton = css`
+  width: 4rem;
+  min-width: auto;
+  font-size: 1rem;
+  padding: 0;
+`;
+
 export const ButtonForIcon = css`
   width: 2rem;
   min-width: auto;
   padding: 0;
   margin-right: 1rem;
+`;
+
+export const ModalButton = css`
+  width: 7rem;
+  min-width: auto;
 `;
