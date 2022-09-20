@@ -102,12 +102,6 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
 
   const column = Number(lyricColumn) || 3;
 
-  const getWidth = (index: number) => {
-    if (index === -1) return 200;
-    const targetColumn = index % column;
-    return Number(lyricColumnSizeList[targetColumn]) || 200;
-  }
-
   const getIndex = (id: number) => {
     return lyrics.findIndex(lyric => lyric.id === id);
   }
@@ -127,11 +121,19 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
     ]);
   }
 
-  const gridColumnTemplateValue = window.matchMedia('(max-width: 960px)').matches ? (
+  const widths = window.matchMedia('(max-width: 960px)').matches ? lyricColumnSizeList.map(size => Math.floor(Number(size) * 0.75)) : lyricColumnSizeList;
+
+  const getWidth = (index: number) => {
+    if (index === -1) return 200;
+    const targetColumn = index % column;
+    return Number(widths[targetColumn]) || 200;
+  }
+
+  /* const gridColumnTemplateValue = window.matchMedia('(max-width: 960px)').matches ? (
     lyricColumnSizeList.map(size => `${Math.floor(Number(size) * 0.75)}px`).join(' ')
   ) : (
     lyricColumnSizeList.map(size => `${size}px`).join(' ')
-  ) 
+  )  */
 
   return ( 
     <Box css={WriteInputContainer}>
@@ -164,7 +166,7 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
         <Box 
           css={css`
             display: grid;
-            grid-template-columns: ${gridColumnTemplateValue};
+            grid-template-columns: ${widths.map(size => `${size}px`).join(' ')};
             grid-template-rows: auto;
           `}
         >
@@ -179,7 +181,7 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
         <Box 
           css={css`
             display: grid;
-            grid-template-columns: ${gridColumnTemplateValue};
+            grid-template-columns: ${widths.map(size => `${size}px`).join(' ')};
             grid-template-rows: auto;
           `}
         >
@@ -190,10 +192,6 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
             </Box>
           ))}
         </Box>
-        <ColumnChangeSection
-          lyricColumn={lyricColumn}
-          setLyricColumn={setLyricColumn}
-        />
       </Box>
     </Box>
   );

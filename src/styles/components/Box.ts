@@ -12,8 +12,8 @@ export const Contents = css`
 `;
 
 export const WriteAreaBox = css`
-  max-width: 60rem;
   width: 100%;
+  max-width: 60rem;
   background-color: #fff;
   box-shadow: 0.4rem 0.4rem 0.7rem rgb(0, 0, 85, 0.05);
   margin-top: 1rem;
@@ -39,19 +39,31 @@ export const TitleBox = css`
 `;
 
 export const ActionBar = css`
-  max-width: 60rem;
+  display: flex;
   width: 100%;
+  max-width: 60rem;
   margin-top: 1rem;
   padding: 1rem 2rem;
   border-radius: 1rem;
   border: solid 1px #ddd;
   background-color: #fff;
+
+  @media screen and (max-width: 960px) {
+    padding: 1rem;
+  }
 `;
 
 export const ColumnDisplay = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 6rem;
+  height: 2.25rem;
+  padding: 0.2rem 0.5rem;
+  margin-right: 1rem;
   font-size: 1rem;
-  border: solid 1px #11aaff;
-  width: 4rem;
+  border-bottom: solid 1px #ddd;
+  cursor: pointer;
 `
 
 export const SongInfoBox = css`

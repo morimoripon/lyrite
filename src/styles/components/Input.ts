@@ -26,7 +26,14 @@ export const TitleStyle = css`
 `
 
 export const ModalInput = css`
-  font-size: 1.5rem;
+  width: 10rem;
+  align-items: center;
+  div {
+    width: 3rem;
+  }
+  input {
+    font-size: 1.5rem;
+  }
 `
 
 export const SliderStyle = css`

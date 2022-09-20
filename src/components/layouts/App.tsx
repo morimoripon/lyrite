@@ -17,6 +17,7 @@ import SideBar from './SideBar'
 import styled from '@emotion/styled'
 import { OnCreateSongSubscription, OnCreateSongSubscriptionVariables } from '../../types/API'
 import { LyricType, MoreCurrentId } from '../../types/type'
+import ColumnChangeSection from './ColumnChangeSection'
 
 
 const theme = createTheme({
@@ -377,8 +378,16 @@ const App = ({ user, signOut }: Props) => {
         >
           <Box css={Contents}>
             <Box css={ActionBar}>
+              <ColumnChangeSection
+                lyricColumn={lyricColumn}
+                setLyricColumn={setLyricColumn}
+              />
+              {editMode ? (
+                <Button css={ActionButton} color='secondary' variant='contained' onClick={toggleEditMode}>入力モード</Button>
+              ) : (
+                <Button css={ActionButton} color='secondary' variant='outlined' onClick={toggleEditMode}>編集モード</Button>
+              )}
               <Button css={ActionButton} color='secondary' variant='contained' onClick={() => save()}>保存</Button>
-              <Button css={ActionButton} color='secondary' variant='outlined' onClick={toggleEditMode}>編集モード</Button>
             </Box>
             <Box css={WriteAreaBox}>
               <Title

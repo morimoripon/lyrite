@@ -11,6 +11,9 @@ export const SignOutButton = css`
 `;
 
 export const ActionButton = css`
+  width: 6rem;
+  height: 2.25rem;
+  padding: 0.3125rem;
   :not(:first-of-type) {
     margin-left: 1rem;
   }
@@ -35,6 +38,10 @@ export const ButtonForIcon = css`
   min-width: auto;
   padding: 0;
   margin-right: 1rem;
+
+  @media screen and (max-width: 960px) {
+    margin-right: 0.5rem;
+  }
 `;
 
 export const ModalButton = css`

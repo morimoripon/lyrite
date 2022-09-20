@@ -17,7 +17,7 @@ const ColumnChangeSection = ({ lyricColumn, setLyricColumn }: Props) => {
 
   return ( 
     <>
-      <Box css={ColumnDisplay} onClick={handleClick}>{lyricColumn}</Box>
+      <Box css={ColumnDisplay} onClick={handleClick}>列数: {lyricColumn}</Box>
       <ColumnChangeModal 
         open={open}
         lyricColumn={lyricColumn}
