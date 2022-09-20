@@ -1,4 +1,4 @@
-import { css } from "@emotion/react";
+import { css, keyframes } from "@emotion/react";
 
 export const Contents = css`
   padding: 3rem 1rem 0;
@@ -106,3 +106,41 @@ export const SliderBox = css`
     }
   }
 `
+
+const fadeOut = keyframes`
+  0% {
+    opacity: 0
+  }
+  1% {
+    opacity: 1
+  }
+  50% {
+    opacity: 1
+  }
+  100% {
+    opacity: 0
+  }
+`
+
+export const SaveSuccessBox = css`
+  display: flex;
+  align-items: center;
+  padding: 0.1rem 0.3rem;
+  margin-left: 1rem;
+  font-size: 0.7rem;
+  background-color: #27a76f;
+  border-radius: 0.5rem;
+  animation: ${fadeOut} 4s ease-out forwards; 
+
+  @media screen and (max-width: 960px) {
+    padding: 0 0.1rem;
+    margin-left: 0.5rem;
+    font-size: 0.6rem;
+  }
+`
+
+export const MenuMailAddressBox = css`
+  padding: 0.5rem 0.5rem 1rem;
+  max-width: 90vw;
+  font-size: 0.8rem;
+`;

@@ -10,13 +10,17 @@ export const TitleLogo = css`
 export const MailAddress = css`
   position: relative;
   font-size: 1rem;
-  padding-right: 1rem;
+  padding-right: 1.5rem;
+  max-width: 30rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 
   &:before {
     content: '';
     display: block;
     position: absolute;
-    right: -0.2rem;
+    right: 0.2rem;
     top: 40%;
     width: 0.6rem;
     height: 0.6rem;
@@ -27,9 +31,10 @@ export const MailAddress = css`
 
   @media screen and (max-width: 960px) {
     font-size: 0.75rem;
+    max-width: 10rem;
+    padding-right: 1rem;
 
     &:before {
-      right: 0;
       top: 38%;
       width: 0.5rem;
       height: 0.5rem;

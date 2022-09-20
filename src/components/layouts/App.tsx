@@ -18,6 +18,7 @@ import styled from '@emotion/styled'
 import { OnCreateSongSubscription, OnCreateSongSubscriptionVariables } from '../../types/API'
 import { LyricType, MoreCurrentId } from '../../types/type'
 import ColumnChangeSection from './ColumnChangeSection'
+import useSaveDone from '../../hooks/SaveDone'
 
 
 const theme = createTheme({
@@ -107,6 +108,7 @@ const App = ({ user, signOut }: Props) => {
   const [ editMode, setEditMode ] = useState<boolean>(false);
   const [ lyricColumn, setLyricColumn ] = useState<string>(String(defaultLyricColumn));
   const [ lyricColumnSizeList, setLyricColumnSizeList ] = useState<string[]>(defaultLyricColumnSizeList);
+  const [ hasSaved, onSaved ] = useSaveDone(false);
   
   const save = async (callback?: Function) => {
     const song = { 
@@ -118,6 +120,7 @@ const App = ({ user, signOut }: Props) => {
     if (id) {
       try {
         await API.graphql(graphqlOperation(updateSong, { input: { ...song, id }}));
+        onSaved();
       } catch (e) {
         alert('データ更新ができませんでした。')
         return;
@@ -126,6 +129,7 @@ const App = ({ user, signOut }: Props) => {
     } else {
       try {
         await API.graphql(graphqlOperation(createSong, { input: { ...song, username: user.username } }));
+        onSaved();
       } catch (e) {
         alert('データ更新ができませんでした。')
         return;
@@ -238,21 +242,6 @@ const App = ({ user, signOut }: Props) => {
     setLyrics([ ...lyrics, { content: '', id: lyrics.length + 1 } ]);
   };
 
-  /* const handleColumnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target) return;
-    console.log(e)
-    setLyricColumn(e.target.value);
-  } */
-
-  /* const handleColumnSizeChange = (e: any, index: number) => {
-    if (!e.target) return;
-    setLyricColumnSizeList([
-      ...lyricColumnSizeList.slice(0, index),
-      e.target.value,
-      ...lyricColumnSizeList.slice(index + 1)
-    ]);
-  } */
-
   useEffect(() => {
     const userFilter = {
       username: {
@@ -360,7 +349,7 @@ const App = ({ user, signOut }: Props) => {
         <Header
           user={user}
           signOut={signOut}
-          save={save}
+          hasSaved={hasSaved}
           open={sideBarOpened}
           openSideBar={openSideBar}
         />
