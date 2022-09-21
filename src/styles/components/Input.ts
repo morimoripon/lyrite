@@ -16,9 +16,10 @@ export const WriteInputStyle = css`
   }
 `
 
-export const TitleStyle = css`
+export const TitleInputStyle = css`
   ${WriteInputStyle};
   font-size: 1.5rem;
+  border-color: transparent;
 
   @media screen and (max-width: 960px) {
     font-size: 1rem;

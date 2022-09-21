@@ -4,6 +4,8 @@ import { WriteInputStyle } from '../../styles/components/Input';
 import { css } from "@emotion/react";
 import { MenuCurrentId } from '../../types/type';
 import MoreVert from '@mui/icons-material/MoreVert';
+import { EditModeMoreIcon } from '../../styles/components/Icon';
+import { EditBox, EditBoxWrite } from '../../styles/components/Box';
 
 type Props = {
   lyric: string,
@@ -23,58 +25,12 @@ const WriteEditMode = ({ lyric, id, width, menuOpen, selected, setMenuTarget }: 
   };
 
   return (
-    <Box
-      css={css`
-        width: calc(${width}px - 0.5rem);
-        position: relative;
-        border: solid 1px #eee;
-        transition: border-color 0.2s ease;
-        margin-right: 0.5rem;
-        font-size: 1rem;
-
-        &:hover {
-          border-color: #11aaff;
-          svg {
-            opacity: 1;
-          }
-        }
-
-        ${selected && `
-          border-color: #11aaff;
-          svg {
-            opacity: 1;
-          }
-        `}
-
-        @media screen and (max-width: 960px) {
-          font-size: 0.75rem;
-        }
-      `}
-    >
-      <Box 
-        css={css`
-          width: 100%;
-          height: 1.625rem;
-          white-space: nowrap;
-          overflow: hidden;
-          padding: 1px 0 2px;
-        `}
-      >
+    <Box css={EditBox(width, selected)}>
+      <Box css={EditBoxWrite}>
         {lyric}
       </Box>
       <MoreVert
-        css={css`
-          width: 1rem;
-          height: 100%;
-          position: absolute;
-          right: 0;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #fff;
-          background-color: #11aaff;
-          opacity: 0;
-          transition: opacity 0.2s ease;
-        `}
+        css={EditModeMoreIcon}
         onClick={(e) => handleClick(e, id)}
         aria-controls={menuOpen ? 'basic-menu' : undefined}
         aria-haspopup="true"

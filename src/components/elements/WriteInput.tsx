@@ -2,6 +2,7 @@ import { Box, Input } from '@mui/material';
 import React, { useState } from 'react'
 import { WriteInputStyle } from '../../styles/components/Input';
 import { css } from "@emotion/react";
+import { WriteBox } from '../../styles/components/Box';
 
 type Props = {
   lyric: string,
@@ -12,19 +13,12 @@ type Props = {
 
 const WriteInput = ({ lyric, editMode, width, changeLyrics }: Props) => {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    console.log('e', e)
-    console.log('target', e.target)
     if (e?.target) {
-      console.log('change')
       changeLyrics(e.target.value);
     }
   };
   return (
-    <Box
-      css={css`
-        width: ${width}px;
-      `}
-    >
+    <Box css={WriteBox(width)}>
       <Input 
         css={WriteInputStyle}
         onChange={handleChange}

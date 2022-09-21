@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 
-const useSaveDone = (saved: boolean): [ boolean, Function ] => {
+const useSaveDone = (saved: boolean): { hasSaved: boolean, onSaved: Function } => {
   const [ isInitial, setIsInitial ] = useState<boolean>(true);
   const [ hasSaved, setHasSaved ] = useState<boolean>(saved);
 
@@ -18,7 +18,7 @@ const useSaveDone = (saved: boolean): [ boolean, Function ] => {
     }
   }, [ hasSaved ]);
 
-  return [ hasSaved, onSaved ];
+  return { hasSaved, onSaved };
 }
 
 export default useSaveDone

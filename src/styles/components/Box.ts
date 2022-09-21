@@ -1,16 +1,5 @@
 import { css, keyframes } from "@emotion/react";
 
-export const Contents = css`
-  padding: 3rem 1rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  @media screen and (max-width: 960px) {
-    padding: 3rem 0.5rem 0;
-  }
-`;
-
 export const WriteAreaBox = css`
   width: 100%;
   max-width: 60rem;
@@ -24,32 +13,17 @@ export const WriteAreaBox = css`
   }
 `;
 
-export const WriteInputContainer = css`
-  width: 100%;
-  overflow: auto;
-  padding: 0 1rem;
-`;
+export const WriteInputBox = (widths: string[] | number[]) => css`
+  display: grid;
+  grid-template-columns: ${widths.map(size => `${size}px`).join(' ')};
+  grid-template-rows: auto;
+`
 
 export const TitleBox = css`
   padding: 0 1rem 1rem;
 
   @media screen and (max-width: 960px) {
     padding-bottom: 0.5rem;
-  }
-`;
-
-export const ActionBar = css`
-  display: flex;
-  width: 100%;
-  max-width: 60rem;
-  margin-top: 1rem;
-  padding: 1rem 2rem;
-  border-radius: 1rem;
-  border: solid 1px #ddd;
-  background-color: #fff;
-
-  @media screen and (max-width: 960px) {
-    padding: 1rem;
   }
 `;
 
@@ -143,4 +117,52 @@ export const MenuMailAddressBox = css`
   padding: 0.5rem 0.5rem 1rem;
   max-width: 90vw;
   font-size: 0.8rem;
+`;
+
+export const SideBarHeadingBox = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: initial;
+  height: 3rem;
+  padding: 0 0.5rem 0 1rem;
+`;
+
+export const WriteBox = (width: number) => css`
+  width: ${width}px;
+`;
+
+export const EditBox = (width: number, selected: boolean) => css`
+  width: calc(${width}px - 0.5rem);
+  position: relative;
+  border: solid 1px #eee;
+  transition: border-color 0.2s ease;
+  margin-right: 0.5rem;
+  font-size: 1rem;
+
+  &:hover {
+    border-color: #11aaff;
+    svg {
+      opacity: 1;
+    }
+  }
+
+  ${selected && `
+    border-color: #11aaff;
+    svg {
+      opacity: 1;
+    }
+  `}
+
+  @media screen and (max-width: 960px) {
+    font-size: 0.75rem;
+  }
+`;
+
+export const EditBoxWrite = css`
+  width: 100%;
+  height: 1.625rem;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 1px 0 2px;
 `;

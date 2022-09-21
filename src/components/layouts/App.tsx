@@ -1,25 +1,28 @@
-import React, { createContext, useEffect, useState } from 'react'
-import { AppBar, AppBarProps, Button, createTheme, IconButton, Input, ThemeProvider, Toolbar, Typography } from '@mui/material'
-import { Box } from '@mui/system'
-import WriteArea from './WriteArea'
-import { ActionBar, Contents, WriteAreaBox } from '../../styles/components/Box'
-import { Page } from '../../styles/components/Page'
+import React, { useEffect, useState } from 'react';
+import { AppBar, Button, createTheme, ThemeProvider } from '@mui/material';
+import { Box } from '@mui/system';
+import WriteArea from './WriteArea';
+import { WriteAreaBox } from '../../styles/components/Box';
+import { Page } from '../../styles/components/Page';
 import '@aws-amplify/ui-react/styles.css';
-import Header from './Header'
-
+import Header from './Header';
 import API, { graphqlOperation, GraphQLResult } from '@aws-amplify/api';
 import { createSong, deleteSong, updateSong } from '../../graphql/mutations';
 import { listSongs } from '../../graphql/queries';
-import { onCreateSong, onDeleteSong, onUpdateSong } from '../../graphql/subscriptions'
-import Title from './Title'
-import { ActionButton, SignOutButton } from '../../styles/components/Button'
-import SideBar from './SideBar'
-import styled from '@emotion/styled'
-import { OnCreateSongSubscription, OnCreateSongSubscriptionVariables } from '../../types/API'
-import { LyricType, MoreCurrentId } from '../../types/type'
-import ColumnChangeSection from './ColumnChangeSection'
-import useSaveDone from '../../hooks/SaveDone'
-
+import { onCreateSong, onDeleteSong, onUpdateSong } from '../../graphql/subscriptions';
+import Title from './Title';
+import { ActionButton } from '../../styles/components/Button';
+import SideBar from './SideBar';
+import styled from '@emotion/styled';
+import { LyricType, MoreCurrentId } from '../../types/type';
+import ColumnChangeSection from './ColumnChangeSection';
+import useSaveDone from '../../hooks/useSaveDone';
+import { Song } from '../../types/API';
+import { Contents } from '../../styles/components/Container';
+import ActionBar from './ActionBar';
+import useSideBar from '../../hooks/useSidebar';
+import useEditMode from '../../hooks/useEditMode';
+import { AUTOSAVE_TIME, DEFAULT_LYRIC_COLUMN, DEFAULT_LYRIC_COLUMN_SIZE, DEFAULT_LYRIC_COLUMN_SIZE_LIST, DRAWER_WIDTH, NO_TITLE } from '../../constants/constants';
 
 const theme = createTheme({
   palette: {
@@ -48,22 +51,17 @@ type Props = {
   signOut: any/* AuthEventData */,
 }
 
-const AUTOSAVE_TIME = 3000;
+let timeId: NodeJS.Timeout | null = null;
 
-let timeId: any = null;
+const stringifyLyrics = (lyrics: LyricType[]): string => {
+  return lyrics.map(lyric => lyric.content).join('\n');
+}
 
-/* export const LyricColumnSizeListContext = createContext(
-  {} as {
-    lyricColumnSizeList: string[]
-    setLyricColumnSizeList: React.Dispatch<React.SetStateAction<string[]>>
-  }
-); */
-
-export const drawerWidth = '240';
-export const NO_TITLE = '(no title)';
+const parseLyrics = (lyrics: string): LyricType[] => {
+  return lyrics.split('\n').map((lyric, index) => ({ content: lyric, id: index + 1 }));
+}
 
 const withSideBarAnimation = (component: any) => {
-  console.log('window.matchMedia', window.matchMedia('(max-width: 960px)'))
   return styled(component, {
     shouldForwardProp: (prop) => prop !== 'open',
   })<any>(({ theme, open }) => ({
@@ -73,8 +71,8 @@ const withSideBarAnimation = (component: any) => {
       duration: theme.transitions.duration.leavingScreen,
     }),
     ...(open && window.matchMedia('(min-width: 961px)').matches && {
-      width: `calc(100% - ${drawerWidth}px)`,
-      marginLeft: `${drawerWidth}px`,
+      width: `calc(100% - ${DRAWER_WIDTH}px)`,
+      marginLeft: `${DRAWER_WIDTH}px`,
       transition: theme.transitions.create(['margin', 'width'], {
         easing: theme.transitions.easing.easeOut,
         duration: theme.transitions.duration.enteringScreen,
@@ -87,12 +85,8 @@ export const Bar = withSideBarAnimation(AppBar);
 
 const PageContents = withSideBarAnimation(Box);
 
-const defaultLyricColumn = 3;
-const defaultLyricColumnSize = '200';
-const defaultLyricColumnSizeList = new Array(defaultLyricColumn).fill(defaultLyricColumnSize);
-
 const App = ({ user, signOut }: Props) => {
-  const [ songs, setSongs ] = useState<any[]>([]);
+  const [ songs, setSongs ] = useState<Song[]>([]);
   const [ title, setTitle ] = useState<string>('');
   const [ lyrics, setLyrics ] = useState<LyricType[]>([
     { content: '', id: 1 },
@@ -104,73 +98,45 @@ const App = ({ user, signOut }: Props) => {
   ]);
   const [ id, setId ] = useState<string | null>(null);
   const [ readyToWrite, setReadyToWrite ] = useState<boolean>(false);
-  const [ sideBarOpened, setSideBarOpened ] = useState<boolean>(false);
-  const [ editMode, setEditMode ] = useState<boolean>(false);
-  const [ lyricColumn, setLyricColumn ] = useState<string>(String(defaultLyricColumn));
-  const [ lyricColumnSizeList, setLyricColumnSizeList ] = useState<string[]>(defaultLyricColumnSizeList);
-  const [ hasSaved, onSaved ] = useSaveDone(false);
+  const [ lyricColumn, setLyricColumn ] = useState<string>(String(DEFAULT_LYRIC_COLUMN));
+  const [ lyricColumnSizeList, setLyricColumnSizeList ] = useState<string[]>(DEFAULT_LYRIC_COLUMN_SIZE_LIST);
+  const { hasSaved, onSaved } = useSaveDone(false);
+  const { sideBarOpened, openSideBar, closeSideBar } = useSideBar(false);
+  const { editMode, toggleEditMode } = useEditMode(false);
   
   const save = async (callback?: Function) => {
     const song = { 
       title, 
       lyrics: stringifyLyrics(lyrics),
-      columns: Number(lyricColumn) || defaultLyricColumn,
-      columnWidths: lyricColumnSizeList.join('\n') || defaultLyricColumnSizeList.join('\n')
+      columns: Number(lyricColumn) || DEFAULT_LYRIC_COLUMN,
+      columnWidths: lyricColumnSizeList.join('\n') || DEFAULT_LYRIC_COLUMN_SIZE_LIST.join('\n')
     };
-    if (id) {
       try {
-        await API.graphql(graphqlOperation(updateSong, { input: { ...song, id }}));
+        if (id) {
+          await API.graphql(graphqlOperation(updateSong, { input: { ...song, id }}));
+        } else {
+          await API.graphql(graphqlOperation(createSong, { input: { ...song, username: user.username } }));
+        }
         onSaved();
       } catch (e) {
-        alert('データ更新ができませんでした。')
+        alert('データの更新ができませんでした。')
         return;
       }
-      console.log('更新しました')
-    } else {
-      try {
-        await API.graphql(graphqlOperation(createSong, { input: { ...song, username: user.username } }));
-        onSaved();
-      } catch (e) {
-        alert('データ更新ができませんでした。')
-        return;
-      }
-      console.log('作成しました')
-    }
     if (callback) callback();
   }
 
-  const stringifyLyrics = (lyrics: LyricType[]): string => {
-    return lyrics.map(lyric => lyric.content).join('\n');
-  }
-
-  const parseLyrics = (lyrics: string): LyricType[] => {
-    return lyrics.split('\n').map((lyric, index) => ({ content: lyric, id: index + 1 }));
-  }
-
-  const openSideBar = () => {
-    setSideBarOpened(true);
-  }
-
-  const closeSideBar = () => {
-    setSideBarOpened(false);
-  }
-
-  const toggleEditMode = () => {
-    setEditMode(!editMode);
-  };
-
-  const setSongInfo = (song: any) => {
+  const setSongInfo = (song: Song) => {
     setId(song.id);
-    setTitle(song.title);
-    setLyrics(parseLyrics(song.lyrics));
+    setTitle(song.title || '');
+    setLyrics(parseLyrics(song.lyrics || ''));
     setLyricColumn(String(song.columns));
-    setLyricColumnSizeList(song.columnWidths.split('\n'));
+    setLyricColumnSizeList(song.columnWidths ? song.columnWidths.split('\n') : []);
   }
 
   const chooseSong = (id: any) => {
     const targetSong = songs.find((song) => song.id === id);
     if (targetSong) {
-      clearTimeout(timeId);
+      if (timeId) clearTimeout(timeId);
       save(() => {
         setSongInfo(targetSong);
       });
@@ -181,8 +147,8 @@ const App = ({ user, signOut }: Props) => {
     const song = { 
       title: '', 
       lyrics: '',
-      columns: defaultLyricColumn,
-      columnWidths: defaultLyricColumnSizeList.join('\n')
+      columns: DEFAULT_LYRIC_COLUMN,
+      columnWidths: DEFAULT_LYRIC_COLUMN_SIZE_LIST.join('\n')
     };
     try {
       await API.graphql(graphqlOperation(createSong, { input: { ...song, username: user.username } }));
@@ -193,8 +159,8 @@ const App = ({ user, signOut }: Props) => {
   }
 
   const reflectData = (updatedSong: any) => {
-    setSongs((prevState: any) => {
-      const targetIndex = prevState.findIndex((song: any) => song?.id === updatedSong.id);
+    setSongs((prevState: Song[]) => {
+      const targetIndex = prevState.findIndex((song: Song) => song?.id === updatedSong.id);
       if (targetIndex !== -1) {
         return [
           ...prevState.slice(0, targetIndex),
@@ -211,8 +177,8 @@ const App = ({ user, signOut }: Props) => {
   }
 
   const reflectDeleteData = (deletedSong: any) => {
-    setSongs((prevState: any) => {
-      const targetIndex = prevState.findIndex((song: any) => song?.id === deletedSong.id);
+    setSongs((prevState: Song[]) => {
+      const targetIndex = prevState.findIndex((song: Song) => song?.id === deletedSong.id);
       if (targetIndex !== -1) {
         return [
           ...prevState.slice(0, targetIndex),
@@ -225,13 +191,13 @@ const App = ({ user, signOut }: Props) => {
   }
 
   const deleteWithConfirm = async (id: MoreCurrentId) => {
-    const target = songs.find((song: any) => song?.id === id);
+    const target = songs.find((song: Song) => song?.id === id);
     if (!target) {
       alert('指定のデータが見つかりませんでした。既に削除されている可能性があります。');
+      return;
     }
     if (window.confirm(`"${target.title || NO_TITLE}"を削除します。\nよろしいですか？`)) {
       await API.graphql(graphqlOperation(deleteSong, { input: { id }}));
-      console.log('削除しました。')
       return true;
     } else {
       return false;
@@ -253,7 +219,6 @@ const App = ({ user, signOut }: Props) => {
       let songData;
       try {
         songData = await API.graphql(graphqlOperation(listSongs, { filter: userFilter })) as GraphQLResult<any>;
-        console.log('songData', songData)
       } catch (e) {
         alert('データを取得できませんでした。再読み込みを試してみてください。')
         return;
@@ -272,9 +237,9 @@ const App = ({ user, signOut }: Props) => {
 
     getData();
 
-    const subscriptionUpdate = API.graphql(graphqlOperation(onUpdateSong, { filter: userFilter })) as any/* Observable<object> */;
+    const subscriptionUpdate = API.graphql(graphqlOperation(onUpdateSong, { filter: userFilter })) as any;
     subscriptionUpdate.subscribe({
-      next: ({ provider, value }: { provider: any, value: any }) => {
+      next: ({ value }: { value: any }) => {
         const updatedSong = value.data.onUpdateSong;
         reflectData(updatedSong);
       },
@@ -283,9 +248,9 @@ const App = ({ user, signOut }: Props) => {
       }
     });
 
-    const subscriptionCreate = API.graphql(graphqlOperation(onCreateSong, { filter: userFilter })) as any/* Observable<object> */;
+    const subscriptionCreate = API.graphql(graphqlOperation(onCreateSong, { filter: userFilter })) as any;
     subscriptionCreate.subscribe({
-      next: ({ provider, value }: { provider: any, value: any }) => {
+      next: ({ value }: { value: any }) => {
         const createdSong = value.data.onCreateSong;
         reflectData(createdSong);
         setSongInfo(createdSong);
@@ -297,7 +262,7 @@ const App = ({ user, signOut }: Props) => {
 
     const subscriptionDelete = API.graphql(graphqlOperation(onDeleteSong, { filter: userFilter })) as any/* Observable<object> */;
     subscriptionDelete.subscribe({
-      next: ({ provider, value }: { provider: any, value: any }) => {
+      next: ({ value }: { value: any }) => {
         const DeletedSong = value.data.onDeleteSong;
         reflectDeleteData(DeletedSong);
       },
@@ -321,10 +286,9 @@ const App = ({ user, signOut }: Props) => {
       if (columnAmount < listLength) {
         setLyricColumnSizeList([ ...lyricColumnSizeList.slice(0, columnAmount) ]);
       } else if (columnAmount > listLength) {
-        setLyricColumnSizeList([ ...lyricColumnSizeList, ...new Array(columnAmount - listLength).fill(defaultLyricColumnSize) ]);
+        setLyricColumnSizeList([ ...lyricColumnSizeList, ...Array(columnAmount - listLength).fill(DEFAULT_LYRIC_COLUMN_SIZE) ]);
       }
     }
-    
   }, [ lyricColumn ]);
 
   useEffect(() => {
@@ -362,29 +326,20 @@ const App = ({ user, signOut }: Props) => {
           deleteWithConfirm={deleteWithConfirm}
           closeSideBar={closeSideBar}
         />
-        <PageContents
-          open={sideBarOpened}
-        >
+        <PageContents open={sideBarOpened}>
           <Box css={Contents}>
-            <Box css={ActionBar}>
-              <ColumnChangeSection
-                lyricColumn={lyricColumn}
-                setLyricColumn={setLyricColumn}
-              />
-              {editMode ? (
-                <Button css={ActionButton} color='secondary' variant='contained' onClick={toggleEditMode}>入力モード</Button>
-              ) : (
-                <Button css={ActionButton} color='secondary' variant='outlined' onClick={toggleEditMode}>編集モード</Button>
-              )}
-              <Button css={ActionButton} color='secondary' variant='contained' onClick={() => save()}>保存</Button>
-            </Box>
+            <ActionBar
+              lyricColumn={lyricColumn}
+              editMode={editMode}
+              setLyricColumn={setLyricColumn}
+              toggleEditMode={toggleEditMode}
+              save={save}
+            />
             <Box css={WriteAreaBox}>
               <Title
                 title={title}
                 setTitle={setTitle}
               />
-
-              {/* <LyricColumnSizeListContext.Provider value={{ lyricColumnSizeList, setLyricColumnSizeList }}> */}
               <WriteArea
                 lyrics={lyrics}
                 lyricColumn={lyricColumn}
@@ -395,7 +350,6 @@ const App = ({ user, signOut }: Props) => {
                 setLyrics={setLyrics}
                 addSentence={addSentence}
               />
-              {/* </LyricColumnSizeListContext.Provider> */}
             </Box>
           </Box>
         </PageContents>

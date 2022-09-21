@@ -1,7 +1,7 @@
 import { Button, Input, Menu, MenuItem, Slider } from '@mui/material';
 import { Box } from '@mui/system'
 import React, { useContext, useState } from 'react'
-import { SliderBox, SongInfoBox, WriteAreaBox, WriteInputContainer } from '../../styles/components/Box'
+import { SliderBox, SongInfoBox, WriteAreaBox, WriteInputBox } from '../../styles/components/Box'
 import { AddButton, AddSentenceButton } from '../../styles/components/Button';
 import WriteInput from '../elements/WriteInput';
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -20,6 +20,8 @@ import WriteEditMode from '../elements/WriteEditMode';
 import { css } from "@emotion/react";
 import ColumnChangeSection from './ColumnChangeSection';
 import { SliderStyle } from '../../styles/components/Input';
+import { WriteInputContainer } from '../../styles/components/Container';
+import { DEFAULT_LYRIC_COLUMN } from '../../constants/constants';
 
 type Props = {
   lyrics: LyricType[],
@@ -38,11 +40,9 @@ const reorder = (
   startIndex: number,
   endIndex: number
 ): LyricType[] => {
-  console.log('reorder')
   const result = Array.from(list);
-  const [removed] = result.splice(startIndex, 1);
+  const [ removed ] = result.splice(startIndex, 1);
   result.splice(endIndex, 0, removed);
-
   return result;
 };
 
@@ -50,7 +50,9 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
   const [anchorElem, setAnchorElem] = useState<HTMLElement | null>(null);
   const [menuCurrentId, setMenuCurrentId] = useState<MenuCurrentId>(null);
   const menuOpen = Boolean(anchorElem);
-
+  const column = Number(lyricColumn) || DEFAULT_LYRIC_COLUMN;
+  const widths = window.matchMedia('(max-width: 960px)').matches ? 
+    lyricColumnSizeList.map(size => Math.floor(Number(size) * 0.75)) : lyricColumnSizeList;
 
   const setMenuTarget = (target: any, id: MenuCurrentId) => {
     setAnchorElem(target);
@@ -92,24 +94,11 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
 
   const onDragEnd = (sourceIndex: number, destinationIndex: number) => {
     if (sourceIndex === destinationIndex) return;
-    let movedItems = reorder(
-      lyrics, //　順序を入れ変えたい配列
-      sourceIndex, // 元の配列の位置
-      destinationIndex // 移動先の配列の位置
-    );
-    setLyrics(movedItems);
+    setLyrics(reorder(lyrics, sourceIndex, destinationIndex));
   };
-
-  const column = Number(lyricColumn) || 3;
 
   const getIndex = (id: number) => {
     return lyrics.findIndex(lyric => lyric.id === id);
-  }
-
-  const handleColumnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target) return;
-    console.log(e)
-    setLyricColumn(e.target.value);
   }
 
   const handleColumnSizeChange = (e: any, index: number) => {
@@ -121,19 +110,11 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
     ]);
   }
 
-  const widths = window.matchMedia('(max-width: 960px)').matches ? lyricColumnSizeList.map(size => Math.floor(Number(size) * 0.75)) : lyricColumnSizeList;
-
   const getWidth = (index: number) => {
     if (index === -1) return 200;
     const targetColumn = index % column;
     return Number(widths[targetColumn]) || 200;
   }
-
-  /* const gridColumnTemplateValue = window.matchMedia('(max-width: 960px)').matches ? (
-    lyricColumnSizeList.map(size => `${Math.floor(Number(size) * 0.75)}px`).join(' ')
-  ) : (
-    lyricColumnSizeList.map(size => `${size}px`).join(' ')
-  )  */
 
   return ( 
     <Box css={WriteInputContainer}>
@@ -163,13 +144,7 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
           </Menu>
         </>
       ) : (
-        <Box 
-          css={css`
-            display: grid;
-            grid-template-columns: ${widths.map(size => `${size}px`).join(' ')};
-            grid-template-rows: auto;
-          `}
-        >
+        <Box css={WriteInputBox(widths)}>
           {lyrics.map((lyric, index) => {
             const width = getWidth(index);
             return <WriteInput key={index} lyric={lyric.content} editMode={editMode} width={width} changeLyrics={(value: any) => changeLyrics(index, value, lyric.id)} />
@@ -179,15 +154,10 @@ const WriteArea = ({ lyrics, lyricColumn, lyricColumnSizeList, editMode, setLyri
       )}
       <Box css={SongInfoBox}>
         <Box 
-          css={css`
-            display: grid;
-            grid-template-columns: ${widths.map(size => `${size}px`).join(' ')};
-            grid-template-rows: auto;
-          `}
+          css={WriteInputBox(widths)}
         >
           {lyricColumnSizeList.map((size, index) => (
             <Box key={index} css={SliderBox}>
-              {/* <Input type='number' onChange={(e) => handleColumnSizeChange(e, index)} value={size} inputProps={{ min: 50, max: 1000 }} /> */}
               <Slider color='secondary' css={SliderStyle} min={80} max={800} onChange={(e) => handleColumnSizeChange(e, index)} value={Number(size)} aria-label="Default" valueLabelDisplay="auto" />
             </Box>
           ))}

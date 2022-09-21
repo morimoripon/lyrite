@@ -1,15 +1,17 @@
 import React, { useState } from 'react'
-import { AppBar, Button, createTheme, Divider, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText, Menu, MenuItem, SwipeableDrawer, ThemeProvider, Toolbar, Typography } from '@mui/material'
+import { Button, createTheme, Divider, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText, Menu, MenuItem, SwipeableDrawer, ThemeProvider, Toolbar, Typography } from '@mui/material'
 import { Box } from '@mui/system'
-import { HeaderToolbarWrap } from '../../styles/components/Header'
-import { ActionButton, AddButton, SignOutButton } from '../../styles/components/Button'
-import { drawerWidth, NO_TITLE } from './App'
+import { AddButton, SideBarCloseButton, SignOutButton } from '../../styles/components/Button'
 import { SideBarListItem } from '../../styles/components/List'
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
 import { Ellipsis } from '../../styles/components/Text'
 import { MoreCurrentId } from '../../types/type'
 import { css } from "@emotion/react";
 import ArrowBack from '@mui/icons-material/ArrowBackIosNew';
+import { ArrowBackIcon, SideBarMoreIcon } from '../../styles/components/Icon'
+import { SideBarHeadingBox } from '../../styles/components/Box'
+import { SideBarContainer } from '../../styles/components/Container'
+import { DRAWER_WIDTH, NO_TITLE } from '../../constants/constants'
 
 
 type Props = {
@@ -27,13 +29,11 @@ const SideBar = ({ open, songs, currentId, choose, create, deleteWithConfirm, cl
   const [ moreCurrentId, setMoreCurrentId ] = useState<MoreCurrentId>(null);
   const menuOpen = Boolean(anchorElem);
 
-
   const handleMoreIcon = (e: any, id: MoreCurrentId) => {
     e.preventDefault();
     e.stopPropagation();
     setAnchorElem(e.currentTarget);
     setMoreCurrentId(id);
-    console.log('more')
   };
 
   const clearMenu = () => {
@@ -47,7 +47,6 @@ const SideBar = ({ open, songs, currentId, choose, create, deleteWithConfirm, cl
 
   const handleDelete = async () => {
     const deleted = await deleteWithConfirm(moreCurrentId);
-    console.log('deleted', deleted)
     if (deleted) {
       clearMenu();
     }
@@ -60,41 +59,12 @@ const SideBar = ({ open, songs, currentId, choose, create, deleteWithConfirm, cl
   const sideBarVariant = window.matchMedia('(max-width: 960px)').matches ? 'temporary' : 'persistent';
 
   return (
-    <Drawer variant={sideBarVariant} anchor="left" open={open}
-      onClose={handleClickClose}
-      sx={{
-        width: `${drawerWidth}px`,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: `${drawerWidth}px`,
-          boxSizing: 'border-box',
-        },
-      }}
-    >
+    <Drawer variant={sideBarVariant} css={SideBarContainer(DRAWER_WIDTH)} anchor="left" open={open} onClose={handleClickClose}>
       <Box>
-        <Box css={css`
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          min-height: initial;
-          height: 3rem;
-          padding: 0 0.5rem 0 1rem;
-        `}>
+        <Box css={SideBarHeadingBox}>
           <Typography variant="subtitle1" component="h2">Songs</Typography>
-          <Button 
-            color='secondary'
-            css={css`
-              width: 2rem;
-              min-width: auto;
-              padding: 0;
-            `}
-          >
-            <ArrowBack 
-              css={css`
-                width: 1.2rem;
-              `}
-              onClick={handleClickClose}
-            />
+          <Button color='secondary' css={SideBarCloseButton}>
+            <ArrowBack css={ArrowBackIcon} onClick={handleClickClose} />
           </Button>
         </Box>
         <Divider />
@@ -111,17 +81,7 @@ const SideBar = ({ open, songs, currentId, choose, create, deleteWithConfirm, cl
               aria-expanded={menuOpen ? 'true' : undefined}
             >
               <ListItemText disableTypography css={Ellipsis} primary={title || NO_TITLE} />
-              <MoreHoriz 
-                css={css`
-                  opacity: ${id === moreCurrentId ? '1' : '0.2'};
-                  transition: opacity 0.2s ease;
-                  &:hover {
-                    opacity: 1;
-                  }
-                `} 
-                color='primary' 
-                onClick={(e) => handleMoreIcon(e, id)} 
-              />
+              <MoreHoriz css={SideBarMoreIcon(id === moreCurrentId)} color='primary' onClick={(e) => handleMoreIcon(e, id)} />
             </ListItem>
           ))}
         </List>
@@ -144,15 +104,3 @@ const SideBar = ({ open, songs, currentId, choose, create, deleteWithConfirm, cl
 }
 
 export default SideBar
-
-
-/* <Drawer variant="persistent" anchor="left" open={open}
-      sx={{
-        width: `${drawerWidth}px`,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: `${drawerWidth}px`,
-          boxSizing: 'border-box',
-        },
-      }}
-    > */

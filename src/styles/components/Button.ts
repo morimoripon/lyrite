@@ -48,3 +48,28 @@ export const ModalButton = css`
   width: 7rem;
   min-width: auto;
 `;
+
+export const SideBarOpenButton = (open: boolean) => css`
+  width: 1.5rem;
+  min-width: auto;
+  padding: 0;
+  margin-right: 0.5rem;
+  opacity: 1;
+  transition: width 0.2s ease, opacity 0.2s ease, margin 0.2s ease;
+  overflow: hidden;
+
+  @media screen and (min-width: 961px) {
+    margin-right: 1rem;
+    ${open && `
+      width: 0;
+      opacity: 0;
+      margin-right: 0;
+    `};
+  }
+`
+
+export const SideBarCloseButton = css`
+  width: 2rem;
+  min-width: auto;
+  padding: 0;
+`;

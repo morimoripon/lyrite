@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { AppBar, Button, createTheme, Divider, IconButton, Menu, MenuItem, ThemeProvider, Toolbar, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import { CheckIcon, HeaderToolbar, HeaderToolbarWrap } from '../../styles/components/Header';
-import { ActionButton, ButtonForIcon, SignOutButton } from '../../styles/components/Button';
+import { HeaderToolbar, HeaderToolbarWrap } from '../../styles/components/Toolbar';
+import { ActionButton, ButtonForIcon, SideBarOpenButton, SignOutButton } from '../../styles/components/Button';
 import { Bar } from './App';
 import { css } from "@emotion/react";
 import { MailAddress, TitleLogo } from '../../styles/components/Text';
 import DehazeIcon from '@mui/icons-material/Dehaze';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { MenuMailAddressBox, SaveSuccessBox } from '../../styles/components/Box';
+import { CheckIcon } from '../../styles/components/Icon';
 
 
 type Props = {
@@ -41,26 +42,7 @@ const Header = ({ user, signOut, hasSaved, open, openSideBar }: Props) => {
     <Bar position="fixed" open={open}>
       <Box css={HeaderToolbarWrap}>
         <Toolbar variant="dense" css={HeaderToolbar}>
-          <Button
-            css={css`
-              width: 1.5rem;
-              min-width: auto;
-              padding: 0;
-              margin-right: 0.5rem;
-              opacity: 1;
-              transition: width 0.2s ease, opacity 0.2s ease, margin 0.2s ease;
-              overflow: hidden;
-
-              @media screen and (min-width: 961px) {
-                margin-right: 1rem;
-                ${open && `
-                  width: 0;
-                  opacity: 0;
-                  margin-right: 0;
-                `};
-              }
-            `} 
-          >
+          <Button css={SideBarOpenButton(open)}>
             <DehazeIcon color='info' onClick={handleClickSideBarButton} />
           </Button>
           <Typography css={TitleLogo} variant="h6" component="h1">LYRITE</Typography>
