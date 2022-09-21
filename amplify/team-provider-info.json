@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-lyrite-dev-112425-authRole",
+      "UnauthRoleArn": "arn:aws:iam::383384144925:role/amplify-lyrite-dev-112425-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::383384144925:role/amplify-lyrite-dev-112425-authRole",
+      "Region": "ap-northeast-1",
+      "DeploymentBucketName": "amplify-lyrite-dev-112425-deployment",
+      "UnauthRoleName": "amplify-lyrite-dev-112425-unauthRole",
+      "StackName": "amplify-lyrite-dev-112425",
+      "StackId": "arn:aws:cloudformation:ap-northeast-1:383384144925:stack/amplify-lyrite-dev-112425/906be750-139c-11ed-aa77-0a7176503181",
+      "AmplifyAppId": "d1op1iwnuvjc7f"
+    },
+    "categories": {
+      "auth": {
+        "lyrite7708dfd0": {}
+      }
+    }
+  }
+}
