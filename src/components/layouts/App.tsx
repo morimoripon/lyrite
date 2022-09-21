@@ -271,12 +271,12 @@ const App = ({ user, signOut }: Props) => {
       }
     });
       
-    
+    /* unsubscribeメソッドがなくエラーになってしまうためコメントアウト
     return () => {
       subscriptionUpdate.unsubscribe();
       subscriptionCreate.unsubscribe();
       subscriptionDelete.unsubscribe();
-    }
+    } */
   }, []);
 
   useEffect(() => {
