@@ -22,7 +22,7 @@ import { Contents } from '../../styles/components/Container';
 import ActionBar from './ActionBar';
 import useSideBar from '../../hooks/useSidebar';
 import useEditMode from '../../hooks/useEditMode';
-import { AUTOSAVE_TIME, DEFAULT_LYRIC_COLUMN, DEFAULT_LYRIC_COLUMN_SIZE, DEFAULT_LYRIC_COLUMN_SIZE_LIST, DRAWER_WIDTH, NO_TITLE } from '../../constants/constants';
+import { AUTOSAVE_TIME, DEFAULT_LYRIC_COLUMN, DEFAULT_LYRIC_COLUMN_SIZE, DEFAULT_LYRIC_COLUMN_SIZE_LIST, DRAWER_WIDTH, EMPTY_SONG, NO_TITLE } from '../../constants/constants';
 
 const theme = createTheme({
   palette: {
@@ -85,21 +85,21 @@ export const Bar = withSideBarAnimation(AppBar);
 
 const PageContents = withSideBarAnimation(Box);
 
+const newSongData = { 
+  title: EMPTY_SONG.title, 
+  lyrics: stringifyLyrics(EMPTY_SONG.lyrics),
+  columns: EMPTY_SONG.lyricColumn,
+  columnWidths: EMPTY_SONG.lyricColumnSizeList.join('\n')
+}
+
 const App = ({ user, signOut }: Props) => {
   const [ songs, setSongs ] = useState<Song[]>([]);
-  const [ title, setTitle ] = useState<string>('');
-  const [ lyrics, setLyrics ] = useState<LyricType[]>([
-    { content: '', id: 1 },
-    { content: '', id: 2 },
-    { content: '', id: 3 },
-    { content: '', id: 4 },
-    { content: '', id: 5 },
-    { content: '', id: 6 }
-  ]);
-  const [ id, setId ] = useState<string | null>(null);
+  const [ title, setTitle ] = useState<string>(EMPTY_SONG.title);
+  const [ lyrics, setLyrics ] = useState<LyricType[]>([ ...EMPTY_SONG.lyrics ]);
+  const [ id, setId ] = useState<string | null>(EMPTY_SONG.id);
+  const [ lyricColumn, setLyricColumn ] = useState<string>(String(EMPTY_SONG.lyricColumn));
+  const [ lyricColumnSizeList, setLyricColumnSizeList ] = useState<string[]>(EMPTY_SONG.lyricColumnSizeList);
   const [ readyToWrite, setReadyToWrite ] = useState<boolean>(false);
-  const [ lyricColumn, setLyricColumn ] = useState<string>(String(DEFAULT_LYRIC_COLUMN));
-  const [ lyricColumnSizeList, setLyricColumnSizeList ] = useState<string[]>(DEFAULT_LYRIC_COLUMN_SIZE_LIST);
   const { hasSaved, onSaved } = useSaveDone(false);
   const { sideBarOpened, openSideBar, closeSideBar } = useSideBar(false);
   const { editMode, toggleEditMode } = useEditMode(false);
@@ -125,7 +125,7 @@ const App = ({ user, signOut }: Props) => {
     if (callback) callback();
   }
 
-  const setSongInfo = (song: Song) => {
+  const setSongInfo = (song: any) => {
     setId(song.id);
     setTitle(song.title || '');
     setLyrics(parseLyrics(song.lyrics || ''));
@@ -144,14 +144,9 @@ const App = ({ user, signOut }: Props) => {
   }
 
   const createNewSong = async () => {
-    const song = { 
-      title: '', 
-      lyrics: '',
-      columns: DEFAULT_LYRIC_COLUMN,
-      columnWidths: DEFAULT_LYRIC_COLUMN_SIZE_LIST.join('\n')
-    };
+    const newSong = { ...newSongData };
     try {
-      await API.graphql(graphqlOperation(createSong, { input: { ...song, username: user.username } }));
+      await API.graphql(graphqlOperation(createSong, { input: { ...newSong, username: user.username } }));
     } catch (e) {
       alert('データ作成ができませんでした。')
       return;
@@ -292,8 +287,12 @@ const App = ({ user, signOut }: Props) => {
   }, [ lyricColumn ]);
 
   useEffect(() => {
-    if (!songs.find(song => song.id === id) && songs.length) {
-      setSongInfo(songs[0]);
+    if (!songs.find(song => song.id === id)) {
+      if (songs.length) {
+        setSongInfo(songs[0]);
+      } else {
+        setSongInfo({ ...newSongData, id: EMPTY_SONG.id });
+      }
     }
   }, [ songs ]);
 
